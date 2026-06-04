@@ -1,0 +1,13 @@
+#pragma once
+
+template <class T>
+class ReadStream {
+public:
+    virtual ~ReadStream() = default;
+
+    virtual void Open() = 0;
+    virtual void Close() = 0;
+    virtual bool IsOpen() const = 0;
+    virtual bool IsEndOfStream() const = 0;
+    virtual T Read() = 0;
+};
