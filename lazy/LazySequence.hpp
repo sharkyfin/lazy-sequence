@@ -143,12 +143,6 @@ private:
         return value;
     }
 
-    static void ValidateInitialValues(const Buffer<T>& values, const Length& lengthValue) {
-        if (lengthValue.IsKnown() && lengthValue.Value().IsFinite() && values.Size() > lengthValue.Value().Value()) {
-            throw InvalidOperation("Initial value count cannot exceed finite sequence length.");
-        }
-    }
-
     static Length ConcatLength(const Length& leftLength, const Length& rightLength) {
         if (!leftLength.IsKnown() || !rightLength.IsKnown()) {
             return Length::Unknown();
@@ -261,7 +255,10 @@ public:
                  Length lengthValue,
                  std::function<T(const Ordinal&, const std::function<T(const Ordinal&)>&)> recurrence)
         : length(lengthValue) {
-        ValidateInitialValues(initialValues, lengthValue);
+        if (lengthValue.IsKnown() && lengthValue.Value().IsFinite()
+            && initialValues.Size() > lengthValue.Value().Value()) {
+            throw InvalidOperation("Initial value count cannot exceed finite sequence length.");
+        }
         if (!recurrence) {
             throw InvalidOperation("A recurrence-based lazy sequence requires a recurrence rule.");
         }
