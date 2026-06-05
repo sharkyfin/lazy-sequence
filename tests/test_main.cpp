@@ -2,7 +2,6 @@
 #include <exception>
 #include <functional>
 #include <iostream>
-#include <limits>
 #include <memory>
 #include <string>
 
@@ -57,6 +56,22 @@ void AssertNear(double actual, double expected, double epsilon, const std::strin
     if (std::abs(actual - expected) > epsilon) {
         throw std::runtime_error(message);
     }
+}
+
+double MakeInfinity() {
+    double value = 1.0;
+    while (std::isfinite(value)) {
+        value *= 2.0;
+    }
+    return value;
+}
+
+long double MakeHugeFiniteLongDouble() {
+    long double value = 1.0L;
+    while (std::isfinite(value * 2.0L)) {
+        value *= 2.0L;
+    }
+    return value;
 }
 
 template <class Exception>
@@ -462,7 +477,7 @@ void LazySequenceTests(TestRunner& runner) {
         AssertTrue(!Ordinal::Finite(0).IsLimit(), "zero is not treated as a limit ordinal");
         AssertTrue(!Ordinal(1, 1).IsLimit(), "successor ordinal is not a limit ordinal");
 
-        const auto maximum = std::numeric_limits<std::size_t>::max();
+        const std::size_t maximum = static_cast<std::size_t>(-1);
         AssertThrows<InvalidOperation>([&] {
             (void)Ordinal::Finite(maximum).Successor();
         }, "ordinal successor overflow");
@@ -698,17 +713,20 @@ void StatisticsTests(TestRunner& runner) {
 
     runner.Run("online statistics rejects non-finite floating values", [] {
         OnlineStatistics<double> statistics;
+        const double infinity = MakeInfinity();
+        const double notANumber = infinity / infinity;
         AssertThrows<InvalidOperation>([&] {
-            statistics.Add(std::numeric_limits<double>::infinity());
+            statistics.Add(infinity);
         }, "infinity should be rejected");
         AssertThrows<InvalidOperation>([&] {
-            statistics.Add(std::numeric_limits<double>::quiet_NaN());
+            statistics.Add(notANumber);
         }, "NaN should be rejected");
 
         OnlineStatistics<long double> overflowing;
-        overflowing.Add(std::numeric_limits<long double>::max());
+        const long double huge = MakeHugeFiniteLongDouble();
+        overflowing.Add(huge);
         AssertThrows<InvalidOperation>([&] {
-            overflowing.Add(-std::numeric_limits<long double>::max());
+            overflowing.Add(-huge);
         }, "arithmetic overflow should be rejected");
     });
 

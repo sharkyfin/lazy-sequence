@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
-#include <limits>
 
 #include "common/Buffer.hpp"
 #include "common/Exceptions.hpp"
@@ -59,7 +58,7 @@ private:
 public:
     void Add(const T& value) {
         const long double number = AsFiniteNumber(value);
-        if (count == std::numeric_limits<std::size_t>::max()) {
+        if (count == static_cast<std::size_t>(-1)) {
             throw InvalidOperation("Online statistics element count overflow.");
         }
 

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstddef>
-#include <limits>
 #include <string>
 
 #include "common/Exceptions.hpp"
@@ -13,7 +12,7 @@ private:
     std::size_t finiteOffset;
 
     static std::size_t CheckedAdd(std::size_t left, std::size_t right) {
-        if (right > std::numeric_limits<std::size_t>::max() - left) {
+        if (right > static_cast<std::size_t>(-1) - left) {
             throw InvalidOperation("Ordinal arithmetic overflow.");
         }
         return left + right;
